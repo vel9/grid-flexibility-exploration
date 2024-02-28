@@ -2,6 +2,9 @@ from operator import itemgetter
 
 
 def allocate_resources(resources, data_averaged_by_hour_sorted):
+    if len(resources) > len(data_averaged_by_hour_sorted):
+        raise ValueError("Can't allocate more resources than slots")
+
     # sort by priority asc
     resources_sorted = sorted(resources, key=itemgetter("priority"))
     allocated = []
