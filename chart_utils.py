@@ -20,4 +20,6 @@ def show_bar_chart_with_color(data, color_col, x_col, y_col, chart_title):
 
 
 def get_average_in_column(chunk, column_to_average):
+    if chunk.empty:
+        raise ValueError("Dataframe is empty")
     return chunk.loc[:, column_to_average].mean()
