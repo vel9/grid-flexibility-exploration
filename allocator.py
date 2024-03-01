@@ -20,4 +20,31 @@ def allocate_resources(resources, data_averaged_by_hour_sorted):
         allocated.append(["Unallocated",
                           data_averaged_by_hour_sorted[i + rem_i][0],
                           data_averaged_by_hour_sorted[i + rem_i][1]])
+
+    return allocated
+
+def allocate_resources_by_available_energy_output(resources, data_averaged_by_hour_sorted):
+    # sort by priority asc
+    resources_sorted = sorted(resources, key=itemgetter("priority"))
+    allocated = []
+    max_priority = 100
+    for window in data_averaged_by_hour_sorted:
+        window_start_time = window[0]
+        remaining_output = window[1]
+        for resource in resources_sorted:
+            if resource["hours"] == 0:
+                continue
+            if (remaining_output - resource["demand"]) > 0:
+                allocated.append([resource["name"],
+                                  window_start_time,
+                                  resource["demand"],
+                                  resource["priority"]])
+                resource["hours"] -= 1
+                remaining_output -= resource["demand"]
+
+        if remaining_output > 0:
+            allocated.append(["Unallocated",
+                              window_start_time,
+                              remaining_output,
+                              max_priority])
     return allocated

@@ -19,6 +19,13 @@ def show_bar_chart_with_color(data, color_col, x_col, y_col, chart_title):
     fig.show("svg")
 
 
+def show_bar_chart_with_color_sorted(data, color_col, x_col, y_col, bar_sort_col, chart_title):
+    data_df = pd.DataFrame(data, columns=[color_col, x_col, y_col, bar_sort_col])
+    data_df.sort_values(by=[bar_sort_col, y_col], inplace=True)
+    fig = px.bar(data_df, x=x_col, y=y_col, title=chart_title, color=color_col)
+    fig.show("svg")
+
+
 def get_average_in_column(chunk, column_to_average):
     if chunk.empty:
         raise ValueError("Dataframe is empty")
