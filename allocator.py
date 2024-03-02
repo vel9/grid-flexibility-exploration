@@ -17,13 +17,14 @@ def allocate_resources(resources, data_averaged_by_hour_sorted):
             i += 1
 
     for rem_i in range(len(data_averaged_by_hour_sorted) - i):
-        allocated.append(["Unallocated",
+        allocated.append(["Nothing Scheduled",
                           data_averaged_by_hour_sorted[i + rem_i][0],
                           data_averaged_by_hour_sorted[i + rem_i][1]])
 
     return allocated
 
-def allocate_resources_by_available_energy_output(resources, data_averaged_by_hour_sorted):
+
+def allocate_resources_parallel(resources, data_averaged_by_hour_sorted):
     # sort by priority asc
     resources_sorted = sorted(resources, key=itemgetter("priority"))
     allocated = []
