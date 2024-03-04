@@ -34,7 +34,7 @@ class AllocatorTestCase(unittest.TestCase):
         ]
         result = allocate_resources(resources, slots)
         self.assertEqual(4, len(result))
-        self.assertEqual("Unallocated", result[3][0])
+        self.assertEqual("Nothing Scheduled", result[3][0])
 
     def test_allocate_resources_by_num_resources_more_than_slots(self):
         resources = [
@@ -58,7 +58,6 @@ class AllocatorTestCase(unittest.TestCase):
             ["Slot 2", 1],
         ]
         result = allocate_resources_parallel(resources, slots)
-        print(result)
         self.assertEqual(3, len(result))
 
         # resource A was allocated to first slot
@@ -86,7 +85,6 @@ class AllocatorTestCase(unittest.TestCase):
             ["Slot 2", 2],
         ]
         result = allocate_resources_parallel(resources, slots)
-        print(result)
         self.assertEqual(4, len(result))
 
         # resource A was allocated to first slot
@@ -99,7 +97,6 @@ class AllocatorTestCase(unittest.TestCase):
         self.assertEqual("Slot 1", result[1][1])
         self.assertEqual(2, result[1][2])
 
-        # since resources are scheduled across slots, 4 of the units should stay unallocated
         self.assertEqual("Nothing Scheduled", result[2][0])
         self.assertEqual("Slot 1", result[2][1])
         self.assertEqual(3, result[2][2])
