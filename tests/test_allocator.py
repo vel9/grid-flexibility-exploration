@@ -1,5 +1,6 @@
 import unittest
 from allocator import allocate_resources
+from allocator import allocate_resources_parallel
 
 class AllocatorTestCase(unittest.TestCase):
     def test_allocate_resources_by_different_priorities(self):
@@ -47,6 +48,66 @@ class AllocatorTestCase(unittest.TestCase):
         ]
         with self.assertRaises(ValueError):
             allocate_resources(resources, slots)
+
+    def test_allocate_resources_parallel_by_single_resource_across_multiple_hours(self):
+        resources = [
+            {"name": "A", "hours": 2, "priority": 1, "demand": 1},
+        ]
+        slots = [
+            ["Slot 1", 5],
+            ["Slot 2", 1],
+        ]
+        result = allocate_resources_parallel(resources, slots)
+        print(result)
+        self.assertEqual(3, len(result))
+
+        # resource A was allocated to first slot
+        self.assertEqual("Slot 1", result[0][1])
+        self.assertEqual("A", result[0][0]) # resource 1 scheduled
+        self.assertEqual(1, result[0][2])
+
+        # since resources are scheduled across slots, 4 of the units should stay unallocated
+        self.assertEqual("Nothing Scheduled", result[1][0])
+        self.assertEqual("Slot 1", result[1][1])
+        self.assertEqual(4, result[1][2])
+
+        # resource A was also allocated to second slot
+        self.assertEqual("Slot 2", result[2][1])
+        self.assertEqual("A", result[2][0]) # resource B scheduled
+        self.assertEqual(1, result[2][2])
+
+    def test_allocate_resources_parallel_by_multiple_resources_across_multiple_hours(self):
+        resources = [
+            {"name": "A", "hours": 1, "priority": 1, "demand": 1},
+            {"name": "B", "hours": 2, "priority": 2, "demand": 2},
+        ]
+        slots = [
+            ["Slot 1", 6],
+            ["Slot 2", 2],
+        ]
+        result = allocate_resources_parallel(resources, slots)
+        print(result)
+        self.assertEqual(4, len(result))
+
+        # resource A was allocated to first slot
+        self.assertEqual("Slot 1", result[0][1])
+        self.assertEqual("A", result[0][0])
+        self.assertEqual(1, result[0][2])
+
+        # resource B was also allocated to first slot
+        self.assertEqual("B", result[1][0])
+        self.assertEqual("Slot 1", result[1][1])
+        self.assertEqual(2, result[1][2])
+
+        # since resources are scheduled across slots, 4 of the units should stay unallocated
+        self.assertEqual("Nothing Scheduled", result[2][0])
+        self.assertEqual("Slot 1", result[2][1])
+        self.assertEqual(3, result[2][2])
+
+        # resource B was also allocated to second slot
+        self.assertEqual("B", result[3][0])
+        self.assertEqual("Slot 2", result[3][1])
+        self.assertEqual(2, result[3][2])
 
 if __name__ == '__main__':
     unittest.main()

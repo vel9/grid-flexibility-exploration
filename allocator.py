@@ -35,7 +35,7 @@ def allocate_resources_parallel(resources, data_averaged_by_hour_sorted):
         for resource in resources_sorted:
             if resource["hours"] == 0:
                 continue
-            if (remaining_output - resource["demand"]) > 0:
+            if (remaining_output - resource["demand"]) >= 0:
                 allocated.append([resource["name"],
                                   window_start_time,
                                   resource["demand"],
@@ -44,7 +44,7 @@ def allocate_resources_parallel(resources, data_averaged_by_hour_sorted):
                 remaining_output -= resource["demand"]
 
         if remaining_output > 0:
-            allocated.append(["Unallocated",
+            allocated.append(["Nothing Scheduled",
                               window_start_time,
                               remaining_output,
                               max_priority])
