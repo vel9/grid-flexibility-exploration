@@ -28,7 +28,6 @@ def allocate_resources_parallel(resources, data_averaged_by_hour_sorted):
     # sort by priority asc
     resources_sorted = sorted(resources, key=itemgetter("priority"))
     allocated = []
-    max_priority = 100
     for window in data_averaged_by_hour_sorted:
         window_start_time = window[0]
         remaining_output = window[1]
@@ -47,5 +46,5 @@ def allocate_resources_parallel(resources, data_averaged_by_hour_sorted):
             allocated.append(["Nothing Scheduled",
                               window_start_time,
                               remaining_output,
-                              max_priority])
+                              float('inf')])
     return allocated
