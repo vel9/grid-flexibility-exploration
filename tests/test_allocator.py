@@ -1,14 +1,15 @@
 import unittest
 from allocator import allocate_resources
 from allocator import allocate_resources_parallel
+from allocator import to_resources
 
 class AllocatorTestCase(unittest.TestCase):
     def test_allocate_resources_by_different_priorities(self):
-        resources = [
+        resources = to_resources([
             {"name": "A", "hours": 1, "priority": 3},
             {"name": "B", "hours": 1, "priority": 2},
             {"name": "C", "hours": 1, "priority": 1},
-        ]
+        ])
         slots = [
             ["Slot 1", 1],
             ["Slot 2", 2],
@@ -21,11 +22,11 @@ class AllocatorTestCase(unittest.TestCase):
         self.assertEqual("A", result[2][0])
 
     def test_allocate_resources_by_num_resources_less_than_slots(self):
-        resources = [
+        resources = to_resources([
             {"name": "A", "hours": 1, "priority": 3},
             {"name": "B", "hours": 1, "priority": 2},
             {"name": "C", "hours": 1, "priority": 1},
-        ]
+        ])
         slots = [
             ["Slot 1", 1],
             ["Slot 2", 2],
@@ -37,11 +38,11 @@ class AllocatorTestCase(unittest.TestCase):
         self.assertEqual("Nothing Scheduled", result[3][0])
 
     def test_allocate_resources_by_num_resources_more_than_slots(self):
-        resources = [
+        resources = to_resources([
             {"name": "A", "hours": 1, "priority": 3},
             {"name": "B", "hours": 1, "priority": 2},
             {"name": "C", "hours": 1, "priority": 1},
-        ]
+        ])
         slots = [
             ["Slot 1", 1],
             ["Slot 2", 2],
@@ -50,9 +51,9 @@ class AllocatorTestCase(unittest.TestCase):
             allocate_resources(resources, slots)
 
     def test_allocate_resources_parallel_by_single_resource_across_multiple_hours(self):
-        resources = [
-            {"name": "A", "hours": 2, "priority": 1, "demand": 1},
-        ]
+        resources = to_resources([
+            {"name": "A", "hours": 2, "priority": 1, "demand_per_hour": 1},
+        ])
         slots = [
             ["Slot 1", 5],
             ["Slot 2", 1],
@@ -76,10 +77,10 @@ class AllocatorTestCase(unittest.TestCase):
         self.assertEqual(1, result[2][2])
 
     def test_allocate_resources_parallel_by_multiple_resources_across_multiple_hours(self):
-        resources = [
-            {"name": "A", "hours": 1, "priority": 1, "demand": 1},
-            {"name": "B", "hours": 2, "priority": 2, "demand": 2},
-        ]
+        resources = to_resources([
+            {"name": "A", "hours": 1, "priority": 1, "demand_per_hour": 1},
+            {"name": "B", "hours": 2, "priority": 2, "demand_per_hour": 2},
+        ])
         slots = [
             ["Slot 1", 6],
             ["Slot 2", 2],
