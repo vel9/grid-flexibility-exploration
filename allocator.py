@@ -51,7 +51,7 @@ def allocate_resources(resources: list[Resource], time_slots):
 def allocate_resources_by_rolling_average(resources, data_by_location):
     """
     Find optimal window for each resource by calculating a minimum rolling average across 5-minute intervals.
-    Window length is the number of hours a given resource was assigned.
+    Window size is the number of hours a given resource was assigned.
 
     :param resources: list resources to be assigned
     :param data_by_location: price data in 5 minute intervals
