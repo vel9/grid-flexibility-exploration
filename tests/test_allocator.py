@@ -1,7 +1,14 @@
 import unittest
+
+import pandas as pd
+from pandas import Timestamp
+
 from allocator import allocate_resources
 from allocator import allocate_resources_parallel
 from allocator import to_resources
+from allocator import get_window_size
+from allocator import allocate_resources_by_rolling_average
+
 
 class AllocatorTestCase(unittest.TestCase):
     def test_allocate_resources_by_different_priorities(self):
@@ -17,7 +24,7 @@ class AllocatorTestCase(unittest.TestCase):
         ]
         result = allocate_resources(resources, slots)
         self.assertEqual(3, len(result))
-        self.assertEqual("C", result[0][0]) # Resource C was prioritized
+        self.assertEqual("C", result[0][0])  # Resource C was prioritized
         self.assertEqual("B", result[1][0])
         self.assertEqual("A", result[2][0])
 
@@ -63,7 +70,7 @@ class AllocatorTestCase(unittest.TestCase):
 
         # resource A was allocated to first slot
         self.assertEqual("Slot 1", result[0][1])
-        self.assertEqual("A", result[0][0]) # resource 1 scheduled
+        self.assertEqual("A", result[0][0])  # resource 1 scheduled
         self.assertEqual(1, result[0][2])
 
         # since resources are scheduled across slots, 4 of the units should stay unallocated
@@ -73,7 +80,7 @@ class AllocatorTestCase(unittest.TestCase):
 
         # resource A was also allocated to second slot
         self.assertEqual("Slot 2", result[2][1])
-        self.assertEqual("A", result[2][0]) # resource B scheduled
+        self.assertEqual("A", result[2][0])  # resource B scheduled
         self.assertEqual(1, result[2][2])
 
     def test_allocate_resources_parallel_by_multiple_resources_across_multiple_hours(self):
@@ -106,6 +113,36 @@ class AllocatorTestCase(unittest.TestCase):
         self.assertEqual("B", result[3][0])
         self.assertEqual("Slot 2", result[3][1])
         self.assertEqual(2, result[3][2])
+
+    def test_get_window_size_by_invalid_input(self):
+        with self.assertRaises(ValueError):
+            get_window_size(0)
+
+    def test_get_window_size_by_whole_hour(self):
+        self.assertEqual(12, get_window_size(1))
+        self.assertEqual(24, get_window_size(2))
+
+    def test_get_window_size_by_decimal_hour(self):
+        self.assertEqual(18, get_window_size(1.5))
+        # (2.1 * 60) / 5 is 25.2 - we ensure that gets rounded up
+        self.assertEqual(26, get_window_size(2.1))
+
+    def test_allocate_resources_by_rolling_average_by_different_priorities(self):
+        resources = to_resources([
+            {"name": "A", "hours": 1, "priority": 3},
+        ])
+        slots = []
+        for interval in range(24):
+            slots.append([Timestamp('20240308') + pd.Timedelta(minutes=(interval * 5)), 17])
+        slots[23][1] = 5  # force last window to be optimal
+
+        slots_df = pd.DataFrame(slots, columns=["Time", "Value"])
+        result = allocate_resources_by_rolling_average(resources, slots_df)
+        # make sure we select our last generated timestamp as end of optimal window
+        self.assertEqual(Timestamp('20240308') + pd.Timedelta(minutes=(23 * 5)), result[1][1])
+        # 17 * 11 + 5 / 12 = 16
+        self.assertEqual(16, result[1][2])
+
 
 if __name__ == '__main__':
     unittest.main()

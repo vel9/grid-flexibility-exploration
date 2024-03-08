@@ -1,3 +1,5 @@
+import math
+import pandas as pd
 from operator import attrgetter
 
 
@@ -44,6 +46,49 @@ def allocate_resources(resources: list[Resource], time_slots):
                           time_slots[allocated_slot + remaining_slot][1]])
 
     return allocated
+
+
+def allocate_resources_by_rolling_average(resources, data_by_location):
+    """
+    Find optimal window for each resource by calculating a minimum rolling average across 5-minute intervals.
+    Window length is the number of hours a given resource was assigned.
+
+    :param resources: list resources to be assigned
+    :param data_by_location: price data in 5 minute intervals
+    :return: list of data points representing start and end time of optimal windows for each resource
+    """
+    col_name = "Rolling Average"
+    allocated = []
+    for resource in resources:
+        data_by_location_copy = data_by_location.copy()
+        window_size = get_window_size(resource.hours)
+        # add a column representing rolling average ending at given column
+        data_by_location_copy[col_name] = data_by_location_copy.rolling(window=window_size).mean(numeric_only=True)
+
+        min_df = data_by_location_copy.min()
+        rows_with_min_rolling_avg = data_by_location_copy[data_by_location_copy[col_name] == min_df[col_name].min()]
+
+        # only get end time from first matching window
+        end_time = rows_with_min_rolling_avg["Time"].iloc[0]
+        start_time = end_time - pd.Timedelta(hours=resource.hours)
+        rolling_avg_value = rows_with_min_rolling_avg[col_name].iloc[0]
+
+        allocated.append([resource.name, start_time, rolling_avg_value])
+        allocated.append([resource.name, end_time, rolling_avg_value])
+
+    return allocated
+
+
+def get_window_size(num_hours):
+    """
+    Break hours down into 5 minute intervals
+
+    :param num_hours: number of hours
+    :return: number of 5 minute intervals in num_hours
+    """
+    if num_hours <= 0:
+        raise ValueError("num_hours must be greater than 0")
+    return math.ceil((num_hours * 60) / 5)
 
 
 def allocate_resources_parallel(resources: list[Resource], time_slots):
