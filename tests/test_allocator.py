@@ -7,7 +7,7 @@ from allocator import allocate_resources
 from allocator import allocate_resources_parallel
 from allocator import to_resources
 from allocator import get_window_size
-from allocator import allocate_resources_by_rolling_average
+from allocator import allocate_resources_by_min_rolling_average
 
 
 class AllocatorTestCase(unittest.TestCase):
@@ -114,32 +114,37 @@ class AllocatorTestCase(unittest.TestCase):
         self.assertEqual("Slot 2", result[3][1])
         self.assertEqual(2, result[3][2])
 
-    def test_get_window_size_by_invalid_input(self):
+    def test_get_window_size_by_invalid_num_hours(self):
         with self.assertRaises(ValueError):
-            get_window_size(0)
+            get_window_size(0, 5)
+
+    def test_get_window_size_by_invalid_num_minutes_in_interval(self):
+        with self.assertRaises(ValueError):
+            get_window_size(5, 0)
 
     def test_get_window_size_by_whole_hour(self):
-        self.assertEqual(12, get_window_size(1))
-        self.assertEqual(24, get_window_size(2))
+        self.assertEqual(12, get_window_size(1, 5))
+        self.assertEqual(24, get_window_size(2, 5))
 
     def test_get_window_size_by_decimal_hour(self):
-        self.assertEqual(18, get_window_size(1.5))
+        self.assertEqual(18, get_window_size(1.5, 5))
         # (2.1 * 60) / 5 is 25.2 - we ensure that gets rounded up
-        self.assertEqual(26, get_window_size(2.1))
+        self.assertEqual(26, get_window_size(2.1, 5))
 
-    def test_allocate_resources_by_rolling_average_by_different_priorities(self):
+    def test_allocate_resources_by_min_rolling_average_by_different_priorities(self):
+        num_mins_in_interval = 5
         resources = to_resources([
             {"name": "A", "hours": 1, "priority": 3},
         ])
         slots = []
         for interval in range(24):
-            slots.append([Timestamp('20240308') + pd.Timedelta(minutes=(interval * 5)), 17])
+            slots.append([Timestamp('20240308') + pd.Timedelta(minutes=(interval * num_mins_in_interval)), 17])
         slots[23][1] = 5  # force last window to be optimal
 
         slots_df = pd.DataFrame(slots, columns=["Time", "Value"])
-        result = allocate_resources_by_rolling_average(resources, slots_df)
+        result = allocate_resources_by_min_rolling_average(resources, slots_df, num_mins_in_interval)
         # make sure we select our last generated timestamp as end of optimal window
-        self.assertEqual(Timestamp('20240308') + pd.Timedelta(minutes=(23 * 5)), result[1][1])
+        self.assertEqual(Timestamp('20240308') + pd.Timedelta(minutes=(23 * num_mins_in_interval)), result[1][1])
         # 17 * 11 + 5 / 12 = 16
         self.assertEqual(16, result[1][2])
 
