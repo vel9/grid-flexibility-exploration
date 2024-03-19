@@ -4,7 +4,7 @@ from operator import attrgetter
 
 
 class Resource:
-    def __init__(self, name, priority, hours, demand_per_hour):
+    def __init__(self, name: str, priority: int, hours: int, demand_per_hour: float):
         """
         Object representing a home resource consuming energy
 
@@ -19,7 +19,7 @@ class Resource:
         self.demand_per_hour = demand_per_hour
 
 
-def allocate_resources(resources: list[Resource], time_slots):
+def allocate_resources(resources: list[Resource], time_slots: list):
     """
     Assign resources to slots and create representations of any unassigned slots
 
@@ -48,17 +48,20 @@ def allocate_resources(resources: list[Resource], time_slots):
     return allocated
 
 
-def allocate_resources_by_min_rolling_average(resources, data_by_location, num_minutes_in_interval):
+def allocate_resources_by_min_rolling_average(resources: list,
+                                              data_by_location: pd.DataFrame,
+                                              num_minutes_in_interval: int):
     """
-    Find optimal window for each resource by calculating a minimum rolling average across 5-minute intervals.
-    Window size is the number of hours a given resource was assigned.
+    Find optimal window for each resource by calculating a minimum rolling
+    average across 5-minute intervals. Window size is the number of hours
+    a given resource was assigned.
 
     :param resources: list resources to be assigned
     :param data_by_location: price data in 5 minute intervals
     :param num_minutes_in_interval: sample size
     :return: list of data points representing start and end time of optimal windows for each resource
     """
-    col_name = "Rolling Average"
+    col_name: str = "Rolling Average"
     allocated = []
     for resource in resources:
         data_by_location_copy = data_by_location.copy()
@@ -80,9 +83,9 @@ def allocate_resources_by_min_rolling_average(resources, data_by_location, num_m
     return allocated
 
 
-def get_window_size(num_hours, num_minutes_in_interval):
+def get_window_size(num_hours: int, num_minutes_in_interval: int):
     """
-    Break hours down into 5 minute intervals
+    Break hours down into intervals
 
     :param num_hours: number of hours
     :param num_minutes_in_interval: sample size
@@ -95,7 +98,7 @@ def get_window_size(num_hours, num_minutes_in_interval):
     return math.ceil((num_hours * 60) / num_minutes_in_interval)
 
 
-def allocate_resources_parallel(resources: list[Resource], time_slots):
+def allocate_resources_parallel(resources: list[Resource], time_slots: list):
     """
     Assign resources to time slots, assign as many
     resources to a single slot as its output value allows
@@ -134,7 +137,7 @@ def allocate_resources_parallel(resources: list[Resource], time_slots):
     return allocated
 
 
-def to_resources(resources_data):
+def to_resources(resources_data: list[dict]):
     """
     covert each dict to a Resource object and return list
 
