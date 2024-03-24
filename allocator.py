@@ -19,35 +19,6 @@ class Resource:
         self.demand_per_hour = demand_per_hour
 
 
-def allocate_resources(resources: list[Resource], time_slots: list):
-    """
-    Assign resources to slots and create representations of any unassigned slots
-
-    :param resources: list resources to be assigned
-    :param time_slots: list of available time slots
-    :return: allocated list of resources and time slots
-    """
-    if len(resources) > len(time_slots):
-        raise ValueError("Can't allocate more resources than slots")
-
-    resources_sorted = sorted(resources, key=attrgetter("priority"))
-    allocated = []
-    allocated_slot = 0
-    for resource in resources_sorted:
-        for hour in range(resource.hours):
-            allocated.append([resource.name,
-                              time_slots[allocated_slot][0],
-                              time_slots[allocated_slot][1]])
-            allocated_slot += 1
-
-    for remaining_slot in range(len(time_slots) - allocated_slot):
-        allocated.append(["Nothing Scheduled",
-                          time_slots[allocated_slot + remaining_slot][0],
-                          time_slots[allocated_slot + remaining_slot][1]])
-
-    return allocated
-
-
 def allocate_resources_by_min_rolling_average(resources: list,
                                               data_by_location: pd.DataFrame,
                                               num_minutes_in_interval: int):
@@ -74,7 +45,7 @@ def allocate_resources_by_min_rolling_average(resources: list,
 
         # only get end time from first matching window
         end_time = rows_with_min_rolling_avg["Time"].iloc[0]
-        start_time = end_time - pd.Timedelta(hours=resource.hours)
+        start_time = end_time - pd.Timedelta(hours=(resource.hours - 1))
         rolling_avg_value = rows_with_min_rolling_avg[col_name].iloc[0]
 
         allocated.append([resource.name, start_time, rolling_avg_value])
