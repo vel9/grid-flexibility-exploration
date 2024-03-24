@@ -2,8 +2,12 @@ import pandas as pd
 import plotly.express as px
 
 
-def show_line_chart(data: pd.DataFrame, x_col: str, y_col: str, chart_title: str):
-    fig = px.line(data, x=x_col, y=y_col, title=chart_title)
+def show_line_chart(data: pd.DataFrame,
+                    x_col: str,
+                    y_col: str,
+                    chart_title: str,
+                    markers: bool=False):
+    fig = px.line(data, x=x_col, y=y_col, title=chart_title, markers=markers)
     fig.show("svg", width=750)
 
 
@@ -11,8 +15,9 @@ def show_line_chart_with_color(data: pd.DataFrame,
                                color_col: str,
                                x_col: str,
                                y_col: str,
-                               chart_title: str):
-    fig = px.line(data, x=x_col, y=y_col, title=chart_title, color=color_col)
+                               chart_title: str,
+                               markers: bool=False):
+    fig = px.line(data, x=x_col, y=y_col, title=chart_title, color=color_col, markers=markers)
     fig.show("svg", width=900)
 
 
